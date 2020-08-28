@@ -13,9 +13,7 @@ enum CounterAction {
   case pushAnotherCounter
 }
 
-struct CounterEnvironment {
-  let navigation: (NavigationStackAction) -> Void
-}
+struct CounterEnvironment {}
 
 let counterReducer = Reducer<CounterState, CounterAction, CounterEnvironment> { state, action, env in
   switch action {
@@ -28,7 +26,6 @@ let counterReducer = Reducer<CounterState, CounterAction, CounterEnvironment> { 
     return .none
 
   case .pushAnotherCounter:
-    env.navigation(.push(CounterState(count: state.count)))
     return .none
   }
 }

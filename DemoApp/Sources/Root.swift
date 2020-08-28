@@ -10,14 +10,11 @@ enum RootAction {
   case pushCounter
 }
 
-struct RootEnvironment {
-  let navigation: (NavigationStackAction) -> Void
-}
+struct RootEnvironment {}
 
 let rootReducer = Reducer<RootState, RootAction, RootEnvironment> { state, action, env in
   switch action {
   case .pushCounter:
-    env.navigation(.push(CounterState()))
     return .none
   }
 }
