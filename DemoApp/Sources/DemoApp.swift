@@ -1,5 +1,5 @@
-import UIKit
 import SwiftUI
+import UIKit
 
 @UIApplicationMain
 final class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -28,7 +28,7 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 struct AppView: View {
   var body: some View {
-    Text("Hello, World!")
+    DemoView()
   }
 }
 
