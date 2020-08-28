@@ -54,7 +54,6 @@ let navigationStackReducer = NavigationStackReducer { state, action, _ in
 
 typealias NavigationStackStore = Store<NavigationStackState, NavigationStackAction>
 typealias NavigationStackViewStore = ViewStore<NavigationStackState, NavigationStackAction>
-typealias NavigationStackActionDispatcher = (NavigationStackAction) -> Void
 typealias NavigationStackItemViewFactory = (NavigationStackStore, NavigationStackItemState) -> AnyView
 typealias NavigationStackItemOptionalViewFactory = (NavigationStackStore, NavigationStackItemState) -> AnyView?
 
