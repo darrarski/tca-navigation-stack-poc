@@ -10,10 +10,17 @@ Navigation stack component for [The Composable Architecture](https://github.com/
 - [Xcode](https://developer.apple.com/xcode/) v11.6
 - [Swift](https://swift.org/) v5.2
 - [iOS](https://www.apple.com/pl/ios/) v13.6
+- [ComposableArchitecture](https://github.com/pointfreeco/swift-composable-architecture) v0.7.0
 
 ## 📝 Description
 
 Proof of concept of navigation stack component that can be used along with [The Composable Architecture](https://github.com/pointfreeco/swift-composable-architecture) library.
+
+Related projects and resources:
+
+- [TCACoordinatorDemo](https://github.com/darrarski/TCACoordinatorDemo)
+- [Swift Forums - Implementing complex navigation stack in SwiftUI and The Composable Architecture](https://forums.swift.org/t/implementing-complex-navigation-stack-in-swiftui-and-the-composable-architecture/39352)
+
 
 ## 📄 License
 
