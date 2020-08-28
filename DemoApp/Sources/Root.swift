@@ -42,16 +42,10 @@ struct RootView: View {
 
 let rootViewFactory: NavigationStackItemOptionalViewFactory = { store, item, env in
   guard let item = item as? RootState else { return nil }
-  return AnyView(
-    RootView(store: Store(
-      initialState: item,
-      reducer: rootReducer.combined(with: Reducer { state, _, _ in
-        env.navigation(.update(state))
-        return .none
-      }),
-      environment: RootEnvironment(
-        navigation: env.navigation
-      )
-    ))
-  )
+  return AnyView(IfLetStore(
+    store.scope(state: { stackState -> RootState? in
+      stackState.first(where: { $0.navigationID == item.navigationID }) as? RootState
+    }, action: NavigationStackAction.root),
+    then: RootView.init(store:)
+  ))
 }

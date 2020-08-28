@@ -10,10 +10,14 @@ protocol NavigationStackItemState {
 }
 
 enum NavigationStackAction {
+  // navigation actions:
   case update(NavigationStackItemState)
   case set([NavigationStackItemState])
   case push(NavigationStackItemState)
   case pop
+  // stack item actions:
+  case root(RootAction)
+  case counter(CounterAction)
 }
 
 struct NavigationStackEnvironment {
@@ -22,8 +26,10 @@ struct NavigationStackEnvironment {
 
 typealias NavigationStackReducer = Reducer<NavigationStackState, NavigationStackAction, NavigationStackEnvironment>
 
+// TODO: combine navigation stack reducer with root and counter reducers
 let navigationStackReducer = NavigationStackReducer { state, action, _ in
   switch action {
+  // generic navigation actions:
   case .update(let item):
     state = state.map { $0.navigationID == item.navigationID ? item : $0 }
     return .none
@@ -38,6 +44,17 @@ let navigationStackReducer = NavigationStackReducer { state, action, _ in
 
   case .pop:
     _ = state.popLast()
+    return .none
+
+  // concrete navigation actions:
+  case .root(.pushCounter):
+    return Effect(value: .push(CounterState()))
+
+  case .counter(.pushAnotherCounter):
+    return Effect(value: .push(CounterState()))
+
+  // unhandled stack item actions:
+  case .counter:
     return .none
   }
 }
