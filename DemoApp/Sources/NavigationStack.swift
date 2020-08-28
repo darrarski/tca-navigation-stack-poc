@@ -23,34 +23,46 @@ struct NavigationStackEnvironment {}
 
 typealias NavigationStackReducer = Reducer<NavigationStackState, NavigationStackAction, NavigationStackEnvironment>
 
-// TODO: combine navigation stack reducer with root and counter reducers
-let navigationStackReducer = NavigationStackReducer { state, action, _ in
-  switch action {
-  // generic navigation actions:
-  case .set(let items):
-    state = items
-    return .none
+let navigationStackReducer = NavigationStackReducer.combine(
+  // TODO: combine navigation stack reducer with root and counter reducers
+//  rootReducer.optional.pullback(
+//    state: <#T##WritableKeyPath<GlobalState, RootState?>#>,
+//    action: <#T##CasePath<GlobalAction, RootAction>#>,
+//    environment: { _ in RootEnvironment() }
+//  ),
+//  counterReducer.optional.pullback(
+//    state: <#T##WritableKeyPath<GlobalState, CounterState?>#>,
+//    action: <#T##CasePath<GlobalAction, CounterAction>#>,
+//    environment: { _ in CounterEnvironment() }
+//  ),
+  NavigationStackReducer { state, action, _ in
+    switch action {
+    // generic navigation actions:
+    case .set(let items):
+      state = items
+      return .none
 
-  case .push(let item):
-    state.append(item)
-    return .none
+    case .push(let item):
+      state.append(item)
+      return .none
 
-  case .pop:
-    _ = state.popLast()
-    return .none
+    case .pop:
+      _ = state.popLast()
+      return .none
 
-  // concrete navigation actions:
-  case .root(let navigationID, .pushCounter):
-    return Effect(value: .push(CounterState()))
+    // concrete navigation actions:
+    case .root(let navigationID, .pushCounter):
+      return Effect(value: .push(CounterState()))
 
-  case .counter(let navigationID, .pushAnotherCounter):
-    return Effect(value: .push(CounterState()))
+    case .counter(let navigationID, .pushAnotherCounter):
+      return Effect(value: .push(CounterState()))
 
-  // unhandled stack item actions:
-  case .counter:
-    return .none
+    // unhandled stack item actions:
+    case .counter:
+      return .none
+    }
   }
-}
+)
 
 typealias NavigationStackStore = Store<NavigationStackState, NavigationStackAction>
 typealias NavigationStackViewStore = ViewStore<NavigationStackState, NavigationStackAction>
