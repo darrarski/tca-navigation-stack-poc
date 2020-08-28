@@ -9,7 +9,6 @@ struct DemoView: View {
         reducer: navigationStackReducer,
         environment: NavigationStackEnvironment()
       ),
-      environment: NavigationStackEnvironment(),
       viewFactory: combine(
         rootViewFactory,
         counterViewFactory

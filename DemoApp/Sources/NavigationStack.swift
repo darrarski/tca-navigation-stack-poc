@@ -20,9 +20,7 @@ enum NavigationStackAction {
   case counter(CounterAction)
 }
 
-struct NavigationStackEnvironment {
-  var navigation: (NavigationStackAction) -> Void = { _ in }
-}
+struct NavigationStackEnvironment {}
 
 typealias NavigationStackReducer = Reducer<NavigationStackState, NavigationStackAction, NavigationStackEnvironment>
 
@@ -91,8 +89,7 @@ final class NavigationStackItemViewController: UIHostingController<AnyView> {
   init(
     stackStore: NavigationStackStore,
     item: NavigationStackItemState,
-    viewFactory: @escaping NavigationStackItemViewFactory,
-    environment: NavigationStackEnvironment
+    viewFactory: @escaping NavigationStackItemViewFactory
   ) {
     self.stackStore = stackStore
     self.item = item
@@ -113,23 +110,19 @@ extension UINavigationController {
 
 struct NavigationStackView: UIViewControllerRepresentable {
   let store: NavigationStackStore
-  private(set) var environment: NavigationStackEnvironment
   let viewFactory: NavigationStackItemViewFactory
   @ObservedObject private(set) var viewStore: NavigationStackViewStore
 
   init(
     store: NavigationStackStore,
-    environment: NavigationStackEnvironment,
     viewFactory: @escaping NavigationStackItemViewFactory
   ) {
     self.store = store
-    self.environment = environment
     self.viewFactory = viewFactory
     self.viewStore = NavigationStackViewStore(store, removeDuplicates: { lhs, rhs in
       lhs.map(\.navigationID) == rhs.map(\.navigationID) &&
         lhs.map(\.navigationTitle) == rhs.map(\.navigationTitle)
     })
-    self.environment.navigation = viewStore.send(_:)
   }
 
   func makeUIViewController(context: Context) -> UINavigationController {
@@ -148,8 +141,7 @@ struct NavigationStackView: UIViewControllerRepresentable {
       return viewController ?? NavigationStackItemViewController(
         stackStore: store,
         item: item,
-        viewFactory: viewFactory,
-        environment: environment
+        viewFactory: viewFactory
       )
     }
     guard presentedNavigationIDs != navigationIDs else { return }
