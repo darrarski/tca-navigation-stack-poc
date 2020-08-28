@@ -11,7 +11,6 @@ protocol NavigationStackItemState {
 
 enum NavigationStackAction {
   // navigation actions:
-  case update(NavigationStackItemState)
   case set([NavigationStackItemState])
   case push(NavigationStackItemState)
   case pop
@@ -28,10 +27,6 @@ typealias NavigationStackReducer = Reducer<NavigationStackState, NavigationStack
 let navigationStackReducer = NavigationStackReducer { state, action, _ in
   switch action {
   // generic navigation actions:
-  case .update(let item):
-    state = state.map { $0.navigationID == item.navigationID ? item : $0 }
-    return .none
-
   case .set(let items):
     state = items
     return .none
