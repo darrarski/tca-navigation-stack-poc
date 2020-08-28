@@ -39,3 +39,19 @@ struct RootView: View {
     }
   }
 }
+
+let rootViewFactory: NavigationStackItemOptionalViewFactory = { item, navigationStackActionDispatcher in
+  guard let item = item as? RootState else { return nil }
+  return AnyView(
+    RootView(store: Store(
+      initialState: item,
+      reducer: rootReducer.combined(with: Reducer { state, _, _ in
+        navigationStackActionDispatcher(.update(state))
+        return .none
+      }),
+      environment: RootEnvironment(
+        navigation: navigationStackActionDispatcher
+      )
+    ))
+  )
+}

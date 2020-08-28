@@ -43,6 +43,21 @@ typealias NavigationStackViewStore = ViewStore<NavigationStackState, NavigationS
 public typealias NavigationStackActionDispatcher = (NavigationStackAction) -> Void
 public typealias NavigationStackItemViewFactory =
   (NavigationStackItemState, @escaping NavigationStackActionDispatcher) -> AnyView
+public typealias NavigationStackItemOptionalViewFactory =
+  (NavigationStackItemState, @escaping NavigationStackActionDispatcher) -> AnyView?
+
+public func combine(
+  _ factories: NavigationStackItemOptionalViewFactory...
+) -> NavigationStackItemViewFactory {
+  return { item, navigationStackActionDispatcher in
+    for factory in factories {
+      if let view = factory(item, navigationStackActionDispatcher) {
+        return view
+      }
+    }
+    fatalError("Unknown navigation item state: <\(type(of: item))>")
+  }
+}
 
 final class NavigationStackItemViewController: UIHostingController<AnyView> {
   var item: NavigationStackItemState {
