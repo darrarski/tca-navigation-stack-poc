@@ -16,7 +16,11 @@ enum NavigationStackAction {
   case pop
 }
 
-typealias NavigationStackReducer = Reducer<NavigationStackState, NavigationStackAction, Void>
+struct NavigationStackEnvironment {
+  var navigation: (NavigationStackAction) -> Void = { _ in }
+}
+
+typealias NavigationStackReducer = Reducer<NavigationStackState, NavigationStackAction, NavigationStackEnvironment>
 
 let navigationStackReducer = NavigationStackReducer { state, action, _ in
   switch action {
@@ -42,16 +46,16 @@ typealias NavigationStackStore = Store<NavigationStackState, NavigationStackActi
 typealias NavigationStackViewStore = ViewStore<NavigationStackState, NavigationStackAction>
 typealias NavigationStackActionDispatcher = (NavigationStackAction) -> Void
 typealias NavigationStackItemViewFactory =
-  (NavigationStackItemState, @escaping NavigationStackActionDispatcher) -> AnyView
+  (NavigationStackItemState, NavigationStackEnvironment) -> AnyView
 typealias NavigationStackItemOptionalViewFactory =
-  (NavigationStackItemState, @escaping NavigationStackActionDispatcher) -> AnyView?
+  (NavigationStackItemState, NavigationStackEnvironment) -> AnyView?
 
 func combine(
   _ factories: NavigationStackItemOptionalViewFactory...
 ) -> NavigationStackItemViewFactory {
-  return { item, navigationStackActionDispatcher in
+  return { item, env in
     for factory in factories {
-      if let view = factory(item, navigationStackActionDispatcher) {
+      if let view = factory(item, env) {
         return view
       }
     }
@@ -62,22 +66,22 @@ func combine(
 final class NavigationStackItemViewController: UIHostingController<AnyView> {
   var item: NavigationStackItemState {
     didSet {
-      rootView = viewFactory(item, navigationDispatcher)
+      rootView = viewFactory(item, environment)
       title = item.navigationTitle
     }
   }
   let viewFactory: NavigationStackItemViewFactory
-  let navigationDispatcher: NavigationStackActionDispatcher
+  let environment: NavigationStackEnvironment
 
   init(
     item: NavigationStackItemState,
     viewFactory: @escaping NavigationStackItemViewFactory,
-    navigationDispatcher: @escaping NavigationStackActionDispatcher
+    environment: NavigationStackEnvironment
   ) {
     self.item = item
     self.viewFactory = viewFactory
-    self.navigationDispatcher = navigationDispatcher
-    super.init(rootView: viewFactory(item, navigationDispatcher))
+    self.environment = environment
+    super.init(rootView: viewFactory(item, environment))
     title = item.navigationTitle
   }
 
@@ -93,19 +97,23 @@ extension UINavigationController {
 
 struct NavigationStackView: UIViewControllerRepresentable {
   let store: NavigationStackStore
+  private(set) var environment: NavigationStackEnvironment
   let viewFactory: NavigationStackItemViewFactory
   @ObservedObject private(set) var viewStore: NavigationStackViewStore
 
   init(
     store: NavigationStackStore,
+    environment: NavigationStackEnvironment,
     viewFactory: @escaping NavigationStackItemViewFactory
   ) {
     self.store = store
+    self.environment = environment
     self.viewFactory = viewFactory
     self.viewStore = NavigationStackViewStore(store, removeDuplicates: { lhs, rhs in
       lhs.map(\.navigationID) == rhs.map(\.navigationID) &&
         lhs.map(\.navigationTitle) == rhs.map(\.navigationTitle)
     })
+    self.environment.navigation = viewStore.send(_:)
   }
 
   func makeUIViewController(context: Context) -> UINavigationController {
@@ -124,7 +132,7 @@ struct NavigationStackView: UIViewControllerRepresentable {
       return viewController ?? NavigationStackItemViewController(
         item: item,
         viewFactory: viewFactory,
-        navigationDispatcher: viewStore.send(_:)
+        environment: environment
       )
     }
     guard presentedNavigationIDs != navigationIDs else { return }

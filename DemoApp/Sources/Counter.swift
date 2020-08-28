@@ -76,17 +76,17 @@ struct CounterView: View {
   }
 }
 
-let counterViewFactory: NavigationStackItemOptionalViewFactory = { item, navigationStackActionDispatcher in
+let counterViewFactory: NavigationStackItemOptionalViewFactory = { item, env in
   guard let item = item as? CounterState else { return nil }
   return AnyView(
     CounterView(store: Store(
       initialState: item,
       reducer: counterReducer.combined(with: Reducer { state, _, _ in
-        navigationStackActionDispatcher(.update(state))
+        env.navigation(.update(state))
         return .none
       }),
       environment: CounterEnvironment(
-        navigation: navigationStackActionDispatcher
+        navigation: env.navigation
       )
     ))
   )
