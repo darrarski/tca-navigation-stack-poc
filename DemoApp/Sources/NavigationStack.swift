@@ -62,17 +62,15 @@ let navigationStackReducer = NavigationStackReducer { state, action, _ in
 typealias NavigationStackStore = Store<NavigationStackState, NavigationStackAction>
 typealias NavigationStackViewStore = ViewStore<NavigationStackState, NavigationStackAction>
 typealias NavigationStackActionDispatcher = (NavigationStackAction) -> Void
-typealias NavigationStackItemViewFactory =
-  (NavigationStackStore, NavigationStackItemState, NavigationStackEnvironment) -> AnyView
-typealias NavigationStackItemOptionalViewFactory =
-  (NavigationStackStore, NavigationStackItemState, NavigationStackEnvironment) -> AnyView?
+typealias NavigationStackItemViewFactory = (NavigationStackStore, NavigationStackItemState) -> AnyView
+typealias NavigationStackItemOptionalViewFactory = (NavigationStackStore, NavigationStackItemState) -> AnyView?
 
 func combine(
   _ factories: NavigationStackItemOptionalViewFactory...
 ) -> NavigationStackItemViewFactory {
-  return { store, item, env in
+  return { store, item in
     for factory in factories {
-      if let view = factory(store, item, env) {
+      if let view = factory(store, item) {
         return view
       }
     }
@@ -84,12 +82,11 @@ final class NavigationStackItemViewController: UIHostingController<AnyView> {
   let stackStore: NavigationStackStore
   var item: NavigationStackItemState {
     didSet {
-      rootView = viewFactory(stackStore, item, environment)
+      rootView = viewFactory(stackStore, item)
       title = item.navigationTitle
     }
   }
   let viewFactory: NavigationStackItemViewFactory
-  let environment: NavigationStackEnvironment
 
   init(
     stackStore: NavigationStackStore,
@@ -100,8 +97,7 @@ final class NavigationStackItemViewController: UIHostingController<AnyView> {
     self.stackStore = stackStore
     self.item = item
     self.viewFactory = viewFactory
-    self.environment = environment
-    super.init(rootView: viewFactory(stackStore, item, environment))
+    super.init(rootView: viewFactory(stackStore, item))
     title = item.navigationTitle
   }
 

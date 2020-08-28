@@ -76,7 +76,7 @@ struct CounterView: View {
   }
 }
 
-let counterViewFactory: NavigationStackItemOptionalViewFactory = { store, item, env in
+let counterViewFactory: NavigationStackItemOptionalViewFactory = { store, item in
   guard let item = item as? CounterState else { return nil }
   return AnyView(IfLetStore(
     store.scope(state: { stackState -> CounterState? in

@@ -40,7 +40,7 @@ struct RootView: View {
   }
 }
 
-let rootViewFactory: NavigationStackItemOptionalViewFactory = { store, item, env in
+let rootViewFactory: NavigationStackItemOptionalViewFactory = { store, item in
   guard let item = item as? RootState else { return nil }
   return AnyView(IfLetStore(
     store.scope(state: { stackState -> RootState? in
