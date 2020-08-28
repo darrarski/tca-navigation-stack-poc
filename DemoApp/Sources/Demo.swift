@@ -13,6 +13,6 @@ struct DemoView: View {
         rootViewFactory,
         counterViewFactory
       )
-    )
+    ).edgesIgnoringSafeArea(.all)
   }
 }
