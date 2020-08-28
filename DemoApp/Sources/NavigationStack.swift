@@ -2,23 +2,23 @@ import ComposableArchitecture
 import SwiftUI
 import UIKit
 
-public typealias NavigationStackState = [NavigationStackItemState]
+typealias NavigationStackState = [NavigationStackItemState]
 
-public protocol NavigationStackItemState {
+protocol NavigationStackItemState {
   var navigationID: UUID { get }
   var navigationTitle: String { get }
 }
 
-public enum NavigationStackAction {
+enum NavigationStackAction {
   case update(NavigationStackItemState)
   case set([NavigationStackItemState])
   case push(NavigationStackItemState)
   case pop
 }
 
-public typealias NavigationStackReducer = Reducer<NavigationStackState, NavigationStackAction, Void>
+typealias NavigationStackReducer = Reducer<NavigationStackState, NavigationStackAction, Void>
 
-public let navigationStackReducer = NavigationStackReducer { state, action, _ in
+let navigationStackReducer = NavigationStackReducer { state, action, _ in
   switch action {
   case .update(let item):
     state = state.map { $0.navigationID == item.navigationID ? item : $0 }
@@ -38,15 +38,15 @@ public let navigationStackReducer = NavigationStackReducer { state, action, _ in
   }
 }
 
-public typealias NavigationStackStore = Store<NavigationStackState, NavigationStackAction>
+typealias NavigationStackStore = Store<NavigationStackState, NavigationStackAction>
 typealias NavigationStackViewStore = ViewStore<NavigationStackState, NavigationStackAction>
-public typealias NavigationStackActionDispatcher = (NavigationStackAction) -> Void
-public typealias NavigationStackItemViewFactory =
+typealias NavigationStackActionDispatcher = (NavigationStackAction) -> Void
+typealias NavigationStackItemViewFactory =
   (NavigationStackItemState, @escaping NavigationStackActionDispatcher) -> AnyView
-public typealias NavigationStackItemOptionalViewFactory =
+typealias NavigationStackItemOptionalViewFactory =
   (NavigationStackItemState, @escaping NavigationStackActionDispatcher) -> AnyView?
 
-public func combine(
+func combine(
   _ factories: NavigationStackItemOptionalViewFactory...
 ) -> NavigationStackItemViewFactory {
   return { item, navigationStackActionDispatcher in
@@ -91,12 +91,12 @@ extension UINavigationController {
   }
 }
 
-public struct NavigationStackView: UIViewControllerRepresentable {
+struct NavigationStackView: UIViewControllerRepresentable {
   let store: NavigationStackStore
   let viewFactory: NavigationStackItemViewFactory
   @ObservedObject private(set) var viewStore: NavigationStackViewStore
 
-  public init(
+  init(
     store: NavigationStackStore,
     viewFactory: @escaping NavigationStackItemViewFactory
   ) {
@@ -108,13 +108,13 @@ public struct NavigationStackView: UIViewControllerRepresentable {
     })
   }
 
-  public func makeUIViewController(context: Context) -> UINavigationController {
+  func makeUIViewController(context: Context) -> UINavigationController {
     let navigationController = UINavigationController()
     navigationController.delegate = context.coordinator
     return navigationController
   }
 
-  public func updateUIViewController(_ navigationController: UINavigationController, context: Context) {
+  func updateUIViewController(_ navigationController: UINavigationController, context: Context) {
     let navigationIDs = viewStore.state.map(\.navigationID)
     let presentedViewControllers = navigationController.itemViewControllers
     let presentedNavigationIDs = presentedViewControllers.map(\.item.navigationID)
@@ -132,12 +132,12 @@ public struct NavigationStackView: UIViewControllerRepresentable {
     navigationController.setViewControllers(newViewControllers, animated: animate)
   }
 
-  public func makeCoordinator() -> NavigationStackCoordinator {
+  func makeCoordinator() -> NavigationStackCoordinator {
     NavigationStackCoordinator(view: self)
   }
 }
 
-public final class NavigationStackCoordinator: NSObject, UINavigationControllerDelegate {
+final class NavigationStackCoordinator: NSObject, UINavigationControllerDelegate {
   let view: NavigationStackView
 
   init(view: NavigationStackView) {
@@ -145,7 +145,7 @@ public final class NavigationStackCoordinator: NSObject, UINavigationControllerD
     super.init()
   }
 
-  public func navigationController(
+  func navigationController(
     _ navigationController: UINavigationController,
     didShow viewController: UIViewController,
     animated: Bool
