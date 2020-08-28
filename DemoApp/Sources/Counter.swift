@@ -76,7 +76,7 @@ struct CounterView: View {
   }
 }
 
-let counterViewFactory: NavigationStackItemOptionalViewFactory = { item, env in
+let counterViewFactory: NavigationStackItemOptionalViewFactory = { store, item, env in
   guard let item = item as? CounterState else { return nil }
   return AnyView(
     CounterView(store: Store(

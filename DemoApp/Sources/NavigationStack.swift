@@ -46,16 +46,16 @@ typealias NavigationStackStore = Store<NavigationStackState, NavigationStackActi
 typealias NavigationStackViewStore = ViewStore<NavigationStackState, NavigationStackAction>
 typealias NavigationStackActionDispatcher = (NavigationStackAction) -> Void
 typealias NavigationStackItemViewFactory =
-  (NavigationStackItemState, NavigationStackEnvironment) -> AnyView
+  (NavigationStackStore, NavigationStackItemState, NavigationStackEnvironment) -> AnyView
 typealias NavigationStackItemOptionalViewFactory =
-  (NavigationStackItemState, NavigationStackEnvironment) -> AnyView?
+  (NavigationStackStore, NavigationStackItemState, NavigationStackEnvironment) -> AnyView?
 
 func combine(
   _ factories: NavigationStackItemOptionalViewFactory...
 ) -> NavigationStackItemViewFactory {
-  return { item, env in
+  return { store, item, env in
     for factory in factories {
-      if let view = factory(item, env) {
+      if let view = factory(store, item, env) {
         return view
       }
     }
@@ -64,9 +64,10 @@ func combine(
 }
 
 final class NavigationStackItemViewController: UIHostingController<AnyView> {
+  let stackStore: NavigationStackStore
   var item: NavigationStackItemState {
     didSet {
-      rootView = viewFactory(item, environment)
+      rootView = viewFactory(stackStore, item, environment)
       title = item.navigationTitle
     }
   }
@@ -74,14 +75,16 @@ final class NavigationStackItemViewController: UIHostingController<AnyView> {
   let environment: NavigationStackEnvironment
 
   init(
+    stackStore: NavigationStackStore,
     item: NavigationStackItemState,
     viewFactory: @escaping NavigationStackItemViewFactory,
     environment: NavigationStackEnvironment
   ) {
+    self.stackStore = stackStore
     self.item = item
     self.viewFactory = viewFactory
     self.environment = environment
-    super.init(rootView: viewFactory(item, environment))
+    super.init(rootView: viewFactory(stackStore, item, environment))
     title = item.navigationTitle
   }
 
@@ -130,6 +133,7 @@ struct NavigationStackView: UIViewControllerRepresentable {
       let viewController = presentedViewControllers.first(where: { $0.item.navigationID == item.navigationID })
       viewController?.item = item
       return viewController ?? NavigationStackItemViewController(
+        stackStore: store,
         item: item,
         viewFactory: viewFactory,
         environment: environment
