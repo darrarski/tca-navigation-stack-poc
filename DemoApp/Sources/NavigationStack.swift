@@ -15,8 +15,8 @@ enum NavigationStackAction {
   case push(NavigationStackItemState)
   case pop
   // stack item actions:
-  case root(RootAction)
-  case counter(CounterAction)
+  case root(UUID, RootAction)
+  case counter(UUID, CounterAction)
 }
 
 struct NavigationStackEnvironment {}
@@ -40,10 +40,10 @@ let navigationStackReducer = NavigationStackReducer { state, action, _ in
     return .none
 
   // concrete navigation actions:
-  case .root(.pushCounter):
+  case .root(let navigationID, .pushCounter):
     return Effect(value: .push(CounterState()))
 
-  case .counter(.pushAnotherCounter):
+  case .counter(let navigationID, .pushAnotherCounter):
     return Effect(value: .push(CounterState()))
 
   // unhandled stack item actions:

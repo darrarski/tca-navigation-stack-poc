@@ -42,7 +42,9 @@ let rootViewFactory: NavigationStackItemOptionalViewFactory = { store, item in
   return AnyView(IfLetStore(
     store.scope(state: { stackState -> RootState? in
       stackState.first(where: { $0.navigationID == item.navigationID }) as? RootState
-    }, action: NavigationStackAction.root),
+    }, action: { rootAction -> NavigationStackAction in
+      NavigationStackAction.root(item.navigationID, rootAction)
+    }),
     then: RootView.init(store:)
   ))
 }
