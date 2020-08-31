@@ -11,6 +11,7 @@ enum CounterAction {
   case increment
   case decrement
   case pushAnotherCounter
+  case goToRoot
 }
 
 struct CounterEnvironment {}
@@ -26,6 +27,9 @@ let counterReducer = Reducer<CounterState, CounterAction, CounterEnvironment> { 
     return .none
 
   case .pushAnotherCounter:
+    return .none
+
+  case .goToRoot:
     return .none
   }
 }
@@ -64,6 +68,13 @@ struct CounterView: View {
             HStack {
               Spacer()
               Text("Push Another Counter")
+              Spacer()
+            }
+          }
+          Button(action: { viewStore.send(.goToRoot) }) {
+            HStack {
+              Spacer()
+              Text("Pop To Root")
               Spacer()
             }
           }

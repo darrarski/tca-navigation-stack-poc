@@ -14,6 +14,7 @@ enum NavigationStackAction {
   case set([NavigationStackItemState])
   case push(NavigationStackItemState)
   case pop
+  case popToRoot
   // stack item actions:
   case root(UUID, RootAction)
   case counter(UUID, CounterAction)
@@ -62,6 +63,10 @@ let navigationStackReducer = NavigationStackReducer.combine(
       _ = state.popLast()
       return .none
 
+    case .popToRoot:
+      state = Array(state.prefix(1))
+      return .none
+
     // concrete navigation actions:
     case .root(let navigationID, .pushCounter):
       return Effect(value: .push(CounterState()))
@@ -70,6 +75,9 @@ let navigationStackReducer = NavigationStackReducer.combine(
       let counterState = state.first(where: { $0.navigationID == navigationID }) as? CounterState
       let count = counterState?.count ?? 0
       return Effect(value: .push(CounterState(count: count)))
+
+    case .counter(let navigationID, .goToRoot):
+      return Effect(value: .popToRoot)
 
     // unhandled stack item actions:
     case .counter:
