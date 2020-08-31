@@ -7,7 +7,7 @@ struct DemoView: View {
       store: Store(
         initialState: [RootState()],
         reducer: navigationStackReducer,
-        environment: ()
+        environment: NavigationStackEnvironment()
       ),
       viewFactory: combine(
         rootViewFactory,

@@ -10,14 +10,11 @@ enum RootAction {
   case pushCounter
 }
 
-struct RootEnvironment {
-  let navigation: (NavigationStackAction) -> Void
-}
+struct RootEnvironment {}
 
 let rootReducer = Reducer<RootState, RootAction, RootEnvironment> { state, action, env in
   switch action {
   case .pushCounter:
-    env.navigation(.push(CounterState()))
     return .none
   }
 }
@@ -40,18 +37,14 @@ struct RootView: View {
   }
 }
 
-let rootViewFactory: NavigationStackItemOptionalViewFactory = { item, navigationStackActionDispatcher in
+let rootViewFactory: NavigationStackItemOptionalViewFactory = { store, item in
   guard let item = item as? RootState else { return nil }
-  return AnyView(
-    RootView(store: Store(
-      initialState: item,
-      reducer: rootReducer.combined(with: Reducer { state, _, _ in
-        navigationStackActionDispatcher(.update(state))
-        return .none
-      }),
-      environment: RootEnvironment(
-        navigation: navigationStackActionDispatcher
-      )
-    ))
-  )
+  return AnyView(IfLetStore(
+    store.scope(state: { stackState -> RootState? in
+      stackState.first(where: { $0.navigationID == item.navigationID }) as? RootState
+    }, action: { rootAction -> NavigationStackAction in
+      NavigationStackAction.root(item.navigationID, rootAction)
+    }),
+    then: RootView.init(store:)
+  ))
 }

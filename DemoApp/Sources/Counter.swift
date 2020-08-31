@@ -13,9 +13,7 @@ enum CounterAction {
   case pushAnotherCounter
 }
 
-struct CounterEnvironment {
-  let navigation: (NavigationStackAction) -> Void
-}
+struct CounterEnvironment {}
 
 let counterReducer = Reducer<CounterState, CounterAction, CounterEnvironment> { state, action, env in
   switch action {
@@ -28,7 +26,6 @@ let counterReducer = Reducer<CounterState, CounterAction, CounterEnvironment> { 
     return .none
 
   case .pushAnotherCounter:
-    env.navigation(.push(CounterState(count: state.count)))
     return .none
   }
 }
@@ -76,18 +73,14 @@ struct CounterView: View {
   }
 }
 
-let counterViewFactory: NavigationStackItemOptionalViewFactory = { item, navigationStackActionDispatcher in
+let counterViewFactory: NavigationStackItemOptionalViewFactory = { store, item in
   guard let item = item as? CounterState else { return nil }
-  return AnyView(
-    CounterView(store: Store(
-      initialState: item,
-      reducer: counterReducer.combined(with: Reducer { state, _, _ in
-        navigationStackActionDispatcher(.update(state))
-        return .none
-      }),
-      environment: CounterEnvironment(
-        navigation: navigationStackActionDispatcher
-      )
-    ))
-  )
+  return AnyView(IfLetStore(
+    store.scope(state: { stackState -> CounterState? in
+      stackState.first(where: { $0.navigationID == item.navigationID }) as? CounterState
+    }, action: { counterAction -> NavigationStackAction in
+      NavigationStackAction.counter(item.navigationID, counterAction)
+    }),
+    then: CounterView.init(store:)
+  ))
 }
