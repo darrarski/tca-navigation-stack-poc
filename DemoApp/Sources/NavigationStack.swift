@@ -24,17 +24,29 @@ struct NavigationStackEnvironment {}
 typealias NavigationStackReducer = Reducer<NavigationStackState, NavigationStackAction, NavigationStackEnvironment>
 
 let navigationStackReducer = NavigationStackReducer.combine(
-  // TODO: combine navigation stack reducer with root and counter reducers
-//  rootReducer.optional.pullback(
-//    state: <#T##WritableKeyPath<GlobalState, RootState?>#>,
-//    action: <#T##CasePath<GlobalAction, RootAction>#>,
-//    environment: { _ in RootEnvironment() }
-//  ),
-//  counterReducer.optional.pullback(
-//    state: <#T##WritableKeyPath<GlobalState, CounterState?>#>,
-//    action: <#T##CasePath<GlobalAction, CounterAction>#>,
-//    environment: { _ in CounterEnvironment() }
-//  ),
+  // pullback root reducer:
+  NavigationStackReducer { state, action, env in
+    guard case .root(let navigationID, let rootAction) = action,
+      var rootState = state.first(where: { $0.navigationID == navigationID }) as? RootState
+      else { return .none }
+    let rootEnvironment = RootEnvironment()
+    let rootEffect = rootReducer.run(&rootState, rootAction, rootEnvironment)
+    state = state.map { $0.navigationID == navigationID ? rootState : $0 }
+    return rootEffect.map { NavigationStackAction.root(navigationID, $0) }
+  },
+
+  // pullback counter reducer:
+  NavigationStackReducer { state, action, env in
+    guard case .counter(let navigationID, let counterAction) = action,
+      var counterState = state.first(where: { $0.navigationID == navigationID }) as? CounterState
+      else { return .none }
+    let counterEnvironment = CounterEnvironment()
+    let counterEffect = counterReducer.run(&counterState, counterAction, counterEnvironment)
+    state = state.map { $0.navigationID == navigationID ? counterState : $0 }
+    return counterEffect.map { NavigationStackAction.counter(navigationID, $0) }
+  },
+
+  // navigation stack reducer:
   NavigationStackReducer { state, action, _ in
     switch action {
     // generic navigation actions:
