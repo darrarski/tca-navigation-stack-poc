@@ -67,7 +67,9 @@ let navigationStackReducer = NavigationStackReducer.combine(
       return Effect(value: .push(CounterState()))
 
     case .counter(let navigationID, .pushAnotherCounter):
-      return Effect(value: .push(CounterState()))
+      let counterState = state.first(where: { $0.navigationID == navigationID }) as? CounterState
+      let count = counterState?.count ?? 0
+      return Effect(value: .push(CounterState(count: count)))
 
     // unhandled stack item actions:
     case .counter:
