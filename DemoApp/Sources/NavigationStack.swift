@@ -9,31 +9,24 @@ protocol NavigationStackItemState {
   var navigationTitle: String { get }
 }
 
-
-
-enum NavigationAction {
+enum NavigationStackAction<StackItemAction> {
   // navigation actions:
   case set([NavigationStackItemState])
   case push(NavigationStackItemState)
   case pop
   case popToRoot
-}
-
-enum NavigationStackAction<StackItemAction> {
-  // navigation actions:
-  case navigationAction(action: NavigationAction)
   // stack item actions:
   case stackItemAction(action: StackItemAction)
 }
 
-enum FeatureAStackItem {
+enum CounterStackItem {
   case root(UUID, RootAction)
   case counter(UUID, CounterAction)
 }
 
 struct NavigationStackEnvironment {}
 
-typealias NavigationStackReducer = Reducer<NavigationStackState, NavigationStackAction<FeatureAStackItem>, NavigationStackEnvironment>
+typealias NavigationStackReducer = Reducer<NavigationStackState, NavigationStackAction<CounterStackItem>, NavigationStackEnvironment>
 
 let navigationStackReducer = NavigationStackReducer.combine(
   // pullback root reducer:
@@ -45,7 +38,7 @@ let navigationStackReducer = NavigationStackReducer.combine(
     let rootEnvironment = RootEnvironment()
     let rootEffect = rootReducer.run(&rootState, rootAction, rootEnvironment)
     state = state.map { $0.navigationID == navigationID ? rootState : $0 }
-    return rootEffect.map { NavigationStackAction<FeatureAStackItem>.stackItemAction(action: .root(navigationID, $0)) }
+    return rootEffect.map { NavigationStackAction<CounterStackItem>.stackItemAction(action: .root(navigationID, $0)) }
   },
 
   // pullback counter reducer:
@@ -57,12 +50,11 @@ let navigationStackReducer = NavigationStackReducer.combine(
     let counterEnvironment = CounterEnvironment()
     let counterEffect = counterReducer.run(&counterState, counterAction, counterEnvironment)
     state = state.map { $0.navigationID == navigationID ? counterState : $0 }
-    return counterEffect.map { NavigationStackAction<FeatureAStackItem>.stackItemAction(action: .counter(navigationID, $0)) }
+    return counterEffect.map { NavigationStackAction<CounterStackItem>.stackItemAction(action: .counter(navigationID, $0)) }
   },
 
   // navigation action reducer:
   NavigationStackReducer { state, action, _ in
-    guard case .navigationAction(let action) = action else { return .none }
     switch action {
     // generic navigation actions:
     case .set(let items):
@@ -80,6 +72,8 @@ let navigationStackReducer = NavigationStackReducer.combine(
     case .popToRoot:
       state = Array(state.prefix(1))
       return .none
+    case .stackItemAction:
+      return .none
     }
   },
 
@@ -89,15 +83,15 @@ let navigationStackReducer = NavigationStackReducer.combine(
     switch action {
     // concrete navigation actions:
     case .root(let navigationID, .pushCounter):
-      return Effect(value: .navigationAction(action: .push(CounterState())))
+      return Effect(value: .push(CounterState()))
 
     case .counter(let navigationID, .pushAnotherCounter):
       let counterState = state.first(where: { $0.navigationID == navigationID }) as? CounterState
       let count = counterState?.count ?? 0
-      return Effect(value: .navigationAction(action: .push(CounterState(count: count))))
+      return Effect(value: .push(CounterState(count: count)))
 
     case .counter(let navigationID, .goToRoot):
-      return Effect(value: .navigationAction(action: .popToRoot))
+      return Effect(value: .popToRoot)
 
     // unhandled stack item actions:
     case .counter:
@@ -106,8 +100,8 @@ let navigationStackReducer = NavigationStackReducer.combine(
   }
 )
 
-typealias NavigationStackStore = Store<NavigationStackState, NavigationStackAction<FeatureAStackItem>>
-typealias NavigationStackViewStore = ViewStore<NavigationStackState, NavigationStackAction<FeatureAStackItem>>
+typealias NavigationStackStore = Store<NavigationStackState, NavigationStackAction<CounterStackItem>>
+typealias NavigationStackViewStore = ViewStore<NavigationStackState, NavigationStackAction<CounterStackItem>>
 typealias NavigationStackItemViewFactory = (NavigationStackStore, NavigationStackItemState) -> AnyView
 typealias NavigationStackItemOptionalViewFactory = (NavigationStackStore, NavigationStackItemState) -> AnyView?
 
@@ -220,6 +214,6 @@ final class NavigationStackCoordinator: NSObject, UINavigationControllerDelegate
     let presentedNavigationIDs = presentedNavigationItems.map(\.navigationID)
     let navigationIDs = view.viewStore.state.map(\.navigationID)
     guard presentedNavigationIDs != navigationIDs else { return }
-    view.viewStore.send(.navigationAction(action: .set(presentedNavigationItems)))
+    view.viewStore.send(.set(presentedNavigationItems))
   }
 }

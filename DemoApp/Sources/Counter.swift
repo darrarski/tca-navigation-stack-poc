@@ -89,7 +89,7 @@ let counterViewFactory: NavigationStackItemOptionalViewFactory = { store, item i
   return AnyView(IfLetStore(
     store.scope(state: { stackState -> CounterState? in
       stackState.first(where: { $0.navigationID == item.navigationID }) as? CounterState
-    }, action: { counterAction -> NavigationStackAction<FeatureAStackItem> in
+    }, action: { counterAction -> NavigationStackAction<CounterStackItem> in
       NavigationStackAction.stackItemAction(action: .counter(item.navigationID, counterAction))
     }),
     then: CounterView.init(store:)
