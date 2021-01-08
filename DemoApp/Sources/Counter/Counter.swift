@@ -1,5 +1,6 @@
 import ComposableArchitecture
 import SwiftUI
+import TCANavigationStack
 
 struct CounterState: NavigationStackItemState, Equatable {
   let navigationID = UUID()
@@ -84,13 +85,13 @@ struct CounterView: View {
   }
 }
 
-let counterViewFactory: NavigationStackItemOptionalViewFactory = { store, item in
+let counterViewFactory: NavigationStackItemOptionalViewFactory<CounterStackItem> = { store, item in
   guard let item = item as? CounterState else { return nil }
   return AnyView(IfLetStore(
     store.scope(state: { stackState -> CounterState? in
       stackState.first(where: { $0.navigationID == item.navigationID }) as? CounterState
-    }, action: { counterAction -> NavigationStackAction in
-      NavigationStackAction.counter(item.navigationID, counterAction)
+    }, action: { counterAction -> NavigationStackAction<CounterStackItem> in
+      NavigationStackAction.stackItemAction(action: .counter(item.navigationID, counterAction))
     }),
     then: CounterView.init(store:)
   ))
