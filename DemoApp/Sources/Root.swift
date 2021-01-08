@@ -1,5 +1,6 @@
 import ComposableArchitecture
 import SwiftUI
+import TCANavigationStack
 
 struct RootState: NavigationStackItemState, Equatable {
   let navigationID = UUID()
@@ -37,7 +38,7 @@ struct RootView: View {
   }
 }
 
-let rootViewFactory: NavigationStackItemOptionalViewFactory = { store, item in
+let rootViewFactory: NavigationStackItemOptionalViewFactory<CounterStackItem> = { store, item in
   guard let item = item as? RootState else { return nil }
   return AnyView(IfLetStore(
     store.scope(state: { stackState -> RootState? in
