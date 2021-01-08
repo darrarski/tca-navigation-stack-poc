@@ -119,6 +119,8 @@
 		2CC4CB0E25A87D580074BFAC /* Counter */ = {
 			isa = PBXGroup;
 			children = (
+				312F775724F907CA003D129B /* Root.swift */,
+				312F775924F907E9003D129B /* Counter.swift */,
 				2CC4CB1025A87D9F0074BFAC /* CounterNavigationStack.swift */,
 			);
 			path = Counter;
@@ -188,8 +190,6 @@
 				2CC4CB0D25A87D3E0074BFAC /* NavigationStack */,
 				31383C8C24F904B400925312 /* DemoApp.swift */,
 				312F775B24F90839003D129B /* Demo.swift */,
-				312F775724F907CA003D129B /* Root.swift */,
-				312F775924F907E9003D129B /* Counter.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
